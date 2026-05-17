@@ -30,8 +30,8 @@ void runOfflineStudioApp() {
   runApp(const ProviderScope(child: OfflineStudioApp()));
 }
 
-final editorProvider = StateNotifierProvider<EditorController, EditorState>(
-  (ref) => EditorController(),
+final editorProvider = NotifierProvider<EditorController, EditorState>(
+  EditorController.new,
 );
 
 List<Rect> buildSlotRects(EditorState state) {
@@ -239,11 +239,7 @@ class EditorState {
   }
 }
 
-class EditorController extends StateNotifier<EditorState> {
-  EditorController() : super(EditorState.initial()) {
-    _loadPreferences();
-  }
-
+class EditorController extends Notifier<EditorState> {
   static const _rowsKey = 'editor.rows';
   static const _columnsKey = 'editor.columns';
   static const _marginKey = 'editor.marginMm';
@@ -255,6 +251,12 @@ class EditorController extends StateNotifier<EditorState> {
   static const _recentExportsKey = 'editor.recentExports';
 
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  EditorState build() {
+    Future.microtask(_loadPreferences);
+    return EditorState.initial();
+  }
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
